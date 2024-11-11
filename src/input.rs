@@ -83,7 +83,7 @@ impl QRInput {
         Ok(())
     }
 
-    fn get_content(&self) -> &str {
+    pub fn get_content(&self) -> &str {
         &self.content
     }
 
@@ -97,7 +97,6 @@ impl QRInput {
 fn main() {
     let mut input = QRInput::new();
     
-    // Example inputs
     let test_cases = vec![
         "12345",                    // Numeric
         "ABC123",                   // Alphanumeric

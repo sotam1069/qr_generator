@@ -1,1 +1,1 @@
-/home/pmatos/home/qrcodegenerator/target/debug/libqrcodegenerator.rlib: /home/pmatos/home/qrcodegenerator/src/encoder.rs /home/pmatos/home/qrcodegenerator/src/error.rs /home/pmatos/home/qrcodegenerator/src/input.rs /home/pmatos/home/qrcodegenerator/src/lib.rs
+/home/pmatos/home/qrcodegenerator/target/debug/libqrcodegenerator.rlib: /home/pmatos/home/qrcodegenerator/src/encoder.rs /home/pmatos/home/qrcodegenerator/src/error.rs /home/pmatos/home/qrcodegenerator/src/input.rs /home/pmatos/home/qrcodegenerator/src/lib.rs /home/pmatos/home/qrcodegenerator/src/versions.rs
