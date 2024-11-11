@@ -1,13 +1,14 @@
 use qrcodegenerator::{InputMode, QRData, QRInput};
 
 fn main() {
-    let mut input = QRData::new();
+    let mut qr_data = QRData::new();
 
     let test_cases = vec![
         "12345",         // Numeric
         "ABC123",        // Alphanumeric
         "Hello, World!", // Byte (ASCII)
-        "Hello, 世界!",  // Byte (UTF-8)// Numeric cases
+        "Hello, 世界!",  // Byte (UTF-8)
+        // Numeric cases
         "12345",                    // Short numeric
         "123456789012345",         // Medium numeric
         "9999999999999999999",     // Long numeric
@@ -37,28 +38,26 @@ fn main() {
     ];
 
     for test in test_cases {
-        match input.set_content(test) {
+        println!("\nTesting: {}", test);
+        println!("{}","-".repeat(40));
+        
+        match qr_data.set_content(test) {
             Ok(mode) => {
-                println!("Input: {}", test);
-                println!("Mode: {:?}", mode);
-                match input.validate_length() {
-                    Ok(_) => println!("Length validation passed"),
-                    Err(e) => println!("Length validation error: {}", e),
-                }
-                println!("EC Level: {:?}", input.get_ec_level().unwrap());
-
-                match input.determine_version() {
-                    Ok(Some(version)) => println!("Version: {}", version),
-                    Ok(None) => println!("Content too large for any version"),
-                    Err(e) => println!("Error determining version: {}", e),
+                println!("Mode: {:?}", qr_data.get_input().get_mode());
+                println!("Mode Indicator: {:04b}", qr_data.get_input().get_mode_indicator());
+                println!("EC Level: {:?}", qr_data.get_ec_level());
+                
+                match qr_data.get_version() {
+                    Some(version) => println!("Version: {}", version),
+                    None => println!("Content too large for any version"),
                 }
 
-                if let Ok(indicator) = input.get_content().unwrap().get_mode_indicator() {
-                    println!("Mode Indicator: {:04b}", indicator);
+                match qr_data.validate_length() {
+                    Ok(_) => println!("Length validated"),
+                    Err(e) => println!("Length validation failed: ({})", e),
                 }
-                println!();
             }
-            Err(e) => println!("Error setting content: {}", e),
+            Err(e) => println!("Error: {}", e),
         }
     }
 }

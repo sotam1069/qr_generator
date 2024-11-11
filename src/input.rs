@@ -9,6 +9,18 @@ pub enum InputMode {
     Kanji,
 }
 
+impl InputMode {
+
+    pub fn get_indicator(self) -> u8 {
+         match self {
+            InputMode::Numeric => 0b0001,
+            InputMode::Alphanumeric => 0b0010,
+            InputMode::Byte => 0b0100,
+            InputMode::Kanji => 0b1000,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct QRInput {
     content: String,
@@ -50,50 +62,39 @@ impl QRInput {
             ));
         }
         self.content = text.to_string();
-        self.determine_mode()
+        self.determine_mode()?;
+        Ok(self.mode)
     }
 
-    pub fn get_mode(&mut self) -> Result<InputMode, QRError> {
-        self.determine_mode()
+    pub fn get_mode(&self) -> InputMode {
+        self.mode
     }
 
-    pub fn determine_mode(&mut self) -> Result<InputMode, QRError> {
+    fn determine_mode(&mut self) -> Result<(), QRError> {
         let content = self.content.as_str();
 
-        if content.chars().all(|c| c.is_ascii_digit()) {
-            self.mode = InputMode::Numeric;
-            return Ok(InputMode::Numeric);
-        }
-
-        if content
+       self.mode =  if content.chars().all(|c| c.is_ascii_digit()) {
+            InputMode::Numeric
+        } else if content
             .chars()
             .all(|c| self.alphanumeric_chars.contains_key(&c))
         {
-            self.mode = InputMode::Alphanumeric;
-            return Ok(InputMode::Alphanumeric);
-        }
+            InputMode::Alphanumeric
+        } else {
+            InputMode::Byte
+        };
 
-        if content.chars().all(|c| c as u32 <= 255) {
-            self.mode = InputMode::Byte;
-            return Ok(InputMode::Byte);
-        }
+        Ok(())
 
-        self.mode = InputMode::Byte;
-        Ok(InputMode::Byte)
     }
 
-    pub fn get_mode_indicator(&self) -> Result<u8, QRError> {
-        match self.mode {
-            InputMode::Numeric => Ok(0b0001),
-            InputMode::Alphanumeric => Ok(0b0010),
-            InputMode::Byte => Ok(0b0100),
-            InputMode::Kanji => Ok(0b1000),
-        }
+    pub fn get_mode_indicator(&self) -> u8 {
+        self.mode.get_indicator()
     }
 
-    pub fn validate_length(&mut self) -> Result<(), QRError> {
+    pub fn validate_length(&self) -> Result<(), QRError> {
         let len = self.content.len();
-        let max_length = match self.determine_mode()? {
+        let max_length = match self.mode {
             InputMode::Numeric => 7089,
             InputMode::Alphanumeric => 4296,
             InputMode::Byte => 2953,
@@ -105,7 +106,7 @@ impl QRInput {
                 "Input length {} exceeds maximum {} for mode {:?}",
                 len,
                 max_length,
-                self.determine_mode()?
+                self.mode
             )));
         }
 

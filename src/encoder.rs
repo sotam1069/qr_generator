@@ -12,7 +12,7 @@ pub enum ErrorCorrectionLevel {
 
 #[derive(Debug, Clone)]
 pub struct QRData {
-    content: QRInput,
+    input: QRInput,
     ec_level: ErrorCorrectionLevel,
     version: Option<u8>,
 }
@@ -20,26 +20,29 @@ pub struct QRData {
 impl QRData {
     pub fn new() -> Self {
         QRData {
-            content: QRInput::new(),
+            input: QRInput::new(),
             ec_level: ErrorCorrectionLevel::M,
             version: None,
         }
     }
 
-    pub fn get_content(&self) -> Result<&QRInput, QRError> {
-        Ok(&self.content)
+    pub fn get_input(&self) -> &QRInput {
+        &self.input
     }
 
     pub fn set_content(&mut self, text: &str) -> Result<InputMode, QRError> {
-        self.content.set_content(text)
+        let mode = self.input.set_content(text)?;
+
+        self.determine_version()?;
+        Ok(mode)
     }
 
-    pub fn get_ec_level(&self) -> Result<ErrorCorrectionLevel, QRError> {
-        Ok(self.ec_level)
+    pub fn get_ec_level(&self) -> ErrorCorrectionLevel {
+        self.ec_level
     }
 
     pub fn set_ec_level(&mut self, level: ErrorCorrectionLevel) -> Result<(), QRError> {
-        let content_length = self.content.get_content().len();
+        let content_length = self.input.get_content().len();
 
         let max_length = match level {
             ErrorCorrectionLevel::L => 7089,
@@ -56,17 +59,22 @@ impl QRData {
         }
 
         self.ec_level = level;
+        self.determine_version()?;
         Ok(())
     }
 
     pub fn validate_length(&mut self) -> Result<(), QRError> {
-        self.content.validate_length()
+        self.input.validate_length()
+    }
+
+    pub fn get_version(&self) -> Option<u8> {
+        self.version
     }
 
     pub fn determine_version(&mut self) -> Result<Option<u8>, QRError> {
 
-        let mode = self.content.get_mode()?;
-        let length = self.content.get_content().len();
+        let mode = self.input.get_mode();
+        let length = self.input.get_content().len();
 
         for(version_index, version_info) in VERSION_CAPACITIES.iter().enumerate() {
             let capacity = &version_info.capacity_by_ec[self.ec_level as usize];
@@ -79,12 +87,11 @@ impl QRData {
             };
 
             if fits {
-                return Ok(Some((version_index + 1) as u8));
+                self.version = Some((version_index + 1) as u8);
+                return Ok(self.version);
             }
         }
-
+        self.version = None;
         Ok(None)
     }
-
-
 }
