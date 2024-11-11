@@ -1,19 +1,19 @@
-use std::collections::HashMap;
 use crate::error::QRError;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy)]
 pub enum InputMode {
     Numeric,
     Alphanumeric,
     Byte,
-    Kanji
+    Kanji,
 }
 
 #[derive(Debug, Clone)]
 pub struct QRInput {
     content: String,
     mode: InputMode,
-    alphanumeric_chars: HashMap<char, bool>
+    alphanumeric_chars: HashMap<char, bool>,
 }
 
 impl QRInput {
@@ -35,18 +35,20 @@ impl QRInput {
         QRInput {
             content: String::new(),
             mode: InputMode::Numeric,
-            alphanumeric_chars: alpha_chars
+            alphanumeric_chars: alpha_chars,
         }
     }
 
     pub fn set_content(&mut self, text: &str) -> Result<InputMode, QRError> {
         if text.is_empty() {
-            return Err(QRError::InvalidInput("Input text cannot be empty".to_string()));
+            return Err(QRError::InvalidInput(
+                "Input text cannot be empty".to_string(),
+            ));
         }
         self.content = text.to_string();
         self.determine_mode()
     }
-    
+
     pub fn determine_mode(&self) -> Result<InputMode, QRError> {
         let content = self.content.as_str();
 
@@ -54,7 +56,10 @@ impl QRInput {
             return Ok(InputMode::Numeric);
         }
 
-        if content.chars().all(|c| self.alphanumeric_chars.contains_key(&c)) {
+        if content
+            .chars()
+            .all(|c| self.alphanumeric_chars.contains_key(&c))
+        {
             return Ok(InputMode::Alphanumeric);
         }
 
@@ -77,7 +82,9 @@ impl QRInput {
         if len > max_length {
             return Err(QRError::InvalidLength(format!(
                 "Input length {} exceeds maximum {} for mode {:?}",
-                len, max_length, self.determine_mode()?
+                len,
+                max_length,
+                self.determine_mode()?
             )));
         }
 
@@ -91,18 +98,16 @@ impl QRInput {
     pub fn get_mode(&self) -> Result<InputMode, QRError> {
         self.determine_mode()
     }
-
 }
-
 
 fn main() {
     let mut input = QRInput::new();
-    
+
     let test_cases = vec![
-        "12345",                    // Numeric
-        "ABC123",                   // Alphanumeric
-        "Hello, World!",            // Byte (ASCII)
-        "Hello, 世界!",             // Byte (UTF-8)
+        "12345",         // Numeric
+        "ABC123",        // Alphanumeric
+        "Hello, World!", // Byte (ASCII)
+        "Hello, 世界!",  // Byte (UTF-8)
     ];
 
     for test in test_cases {
@@ -115,7 +120,7 @@ fn main() {
                     Err(e) => println!("Length validation failed: {}", e),
                 }
                 println!();
-            },
+            }
             Err(e) => println!("Error setting content: {}", e),
         }
     }

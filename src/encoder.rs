@@ -1,6 +1,6 @@
-use std::fmt::Error;
+use crate::versions::{VersionInfo, VERSION_CAPACITIES};
 use crate::{error::QRError, InputMode, QRInput};
-use crate::versions::{VersionInfo,VERSION_CAPACITIES};
+use std::fmt::Error;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ErrorCorrectionLevel {
@@ -26,13 +26,11 @@ pub struct QRData {
 }
 
 impl QRData {
-
     pub fn new() -> Self {
-
         QRData {
             content: QRInput::new(),
             ec_level: ErrorCorrectionLevel::M,
-            version: None
+            version: None,
         }
     }
 
@@ -50,21 +48,21 @@ impl QRData {
 
     pub fn set_ec_level(&mut self, level: ErrorCorrectionLevel) -> Result<(), QRError> {
         let content_length = self.content.get_content().len();
-        
+
         let max_length = match level {
             ErrorCorrectionLevel::L => 7089,
             ErrorCorrectionLevel::M => 5596,
             ErrorCorrectionLevel::Q => 3993,
             ErrorCorrectionLevel::H => 3057,
         };
-    
+
         if content_length > max_length {
-            return Err(QRError::InvalidLength(
-                format!("Content length {} too large for error correction level {:?}", 
-                        content_length, level)
-            ));
+            return Err(QRError::InvalidLength(format!(
+                "Content length {} too large for error correction level {:?}",
+                content_length, level
+            )));
         }
-    
+
         self.ec_level = level;
         Ok(())
     }
@@ -74,19 +72,10 @@ impl QRData {
     }
 
     pub fn determine_version(&self) -> Result<Option<u8>, QRError> {
-
-
-
         Ok(self.version)
     }
 
     fn can_fit_in_version(version: Option<u8>, mode: InputMode, length: usize) -> bool {
-
         false
     }
-
-
-
-
 }
-

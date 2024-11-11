@@ -1,14 +1,39 @@
-use qrcodegenerator::{InputMode, QRInput, QRData};
+use qrcodegenerator::{InputMode, QRData, QRInput};
 
 fn main() {
     let mut input = QRData::new();
-    
-    // Example inputs
+
     let test_cases = vec![
-        "12345",                    // Numeric
-        "ABC123",                   // Alphanumeric
-        "Hello, World!",            // Byte (ASCII)
-        "Hello, 世界!",             // Byte (UTF-8)
+        "12345",         // Numeric
+        "ABC123",        // Alphanumeric
+        "Hello, World!", // Byte (ASCII)
+        "Hello, 世界!",  // Byte (UTF-8)// Numeric cases
+        "12345",                    // Short numeric
+        "123456789012345",         // Medium numeric
+        "9999999999999999999",     // Long numeric
+        
+        // Alphanumeric cases
+        "ABC123",                  // Short alphanumeric
+        "HELLO WORLD:123",         // With allowed special chars
+        "TEST-TEST/123:ABC",       // Mix of allowed chars
+        
+        // Byte cases (ASCII)
+        "Hello, World!",           // Simple ASCII
+        "Hello... World!!!",       // With punctuation
+        "Test@email.com",          // Email format
+        "https://test.com",        // URL format
+        
+        // Byte cases (UTF-8)
+        "Hello, 世界!",            // Mixed ASCII and Unicode
+        "こんにちは",              // Pure Japanese
+        "Café München",            // European chars
+        "Hello 👋 World",          // With emoji
+        
+        // Edge cases
+        "",                        // Empty string (should error)
+        "A",                       // Single character
+        " ",                       // Single space
+        "12A",                     // Numeric + Alpha
     ];
 
     for test in test_cases {
@@ -20,8 +45,16 @@ fn main() {
                     Ok(_) => println!("Length validation passed"),
                     Err(e) => println!("Length validation error: {}", e),
                 }
+                println!("EC Level: {:?}", input.get_ec_level().unwrap());
+
+                match input.determine_version() {
+                    Ok(Some(version)) => println!("Version: {}", version),
+                    Ok(None) => println!("Content too large for any version"),
+                    Err(e) => println!("Error determening version: {}", e),
+                }
+
                 println!();
-            },
+            }
             Err(e) => println!("Error setting content: {}", e),
         }
     }
