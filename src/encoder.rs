@@ -18,6 +18,7 @@ pub struct CapacityInfo {
     pub kanji: usize,
 }
 
+#[derive(Debug, Clone)]
 pub struct QRData {
     content: QRInput,
     ec_level: ErrorCorrectionLevel,
@@ -33,6 +34,14 @@ impl QRData {
             ec_level: ErrorCorrectionLevel::M,
             version: None
         }
+    }
+
+    pub fn get_content(&self) -> Result<&QRInput, QRError> {
+        Ok(&self.content)
+    }
+
+    pub fn set_content(&mut self, text: &str) -> Result<InputMode, QRError> {
+        self.content.set_content(text)
     }
 
     pub fn get_ec_level(&self) -> Result<ErrorCorrectionLevel, QRError> {
@@ -58,6 +67,10 @@ impl QRData {
     
         self.ec_level = level;
         Ok(())
+    }
+
+    pub fn validate_length(&self) -> Result<(), QRError> {
+        self.content.validate_length()
     }
 
     pub fn determine_version(&self) -> Result<Option<u8>, QRError> {

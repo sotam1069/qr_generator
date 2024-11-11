@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::error::QRError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum InputMode {
     Numeric,
     Alphanumeric,
@@ -9,6 +9,7 @@ pub enum InputMode {
     Kanji
 }
 
+#[derive(Debug, Clone)]
 pub struct QRInput {
     content: String,
     mode: InputMode,
@@ -45,7 +46,7 @@ impl QRInput {
         self.content = text.to_string();
         self.determine_mode()
     }
-
+    
     pub fn determine_mode(&self) -> Result<InputMode, QRError> {
         let content = self.content.as_str();
 

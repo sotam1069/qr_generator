@@ -1,7 +1,7 @@
-use qrcodegenerator::{InputMode, QRInput};
+use qrcodegenerator::{InputMode, QRInput, QRData};
 
 fn main() {
-    let mut input = QRInput::new();
+    let mut input = QRData::new();
     
     // Example inputs
     let test_cases = vec![
