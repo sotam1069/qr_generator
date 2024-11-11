@@ -10,14 +10,6 @@ pub enum ErrorCorrectionLevel {
     H,
 }
 
-#[derive(Debug)]
-pub struct CapacityInfo {
-    pub numeric: usize,
-    pub alphanumeric: usize,
-    pub byte: usize,
-    pub kanji: usize,
-}
-
 #[derive(Debug, Clone)]
 pub struct QRData {
     content: QRInput,
@@ -67,11 +59,11 @@ impl QRData {
         Ok(())
     }
 
-    pub fn validate_length(&self) -> Result<(), QRError> {
+    pub fn validate_length(&mut self) -> Result<(), QRError> {
         self.content.validate_length()
     }
 
-    pub fn determine_version(&self) -> Result<Option<u8>, QRError> {
+    pub fn determine_version(&mut self) -> Result<Option<u8>, QRError> {
 
         let mode = self.content.get_mode()?;
         let length = self.content.get_content().len();

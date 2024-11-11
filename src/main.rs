@@ -50,9 +50,12 @@ fn main() {
                 match input.determine_version() {
                     Ok(Some(version)) => println!("Version: {}", version),
                     Ok(None) => println!("Content too large for any version"),
-                    Err(e) => println!("Error determening version: {}", e),
+                    Err(e) => println!("Error determining version: {}", e),
                 }
 
+                if let Ok(indicator) = input.get_content().unwrap().get_mode_indicator() {
+                    println!("Mode Indicator: {:04b}", indicator);
+                }
                 println!();
             }
             Err(e) => println!("Error setting content: {}", e),

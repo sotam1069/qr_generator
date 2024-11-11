@@ -38,6 +38,10 @@ impl QRInput {
             alphanumeric_chars: alpha_chars,
         }
     }
+    
+    pub fn get_content(&self) -> &str {
+        &self.content
+    }
 
     pub fn set_content(&mut self, text: &str) -> Result<InputMode, QRError> {
         if text.is_empty() {
@@ -49,10 +53,15 @@ impl QRInput {
         self.determine_mode()
     }
 
-    pub fn determine_mode(&self) -> Result<InputMode, QRError> {
+    pub fn get_mode(&mut self) -> Result<InputMode, QRError> {
+        self.determine_mode()
+    }
+
+    pub fn determine_mode(&mut self) -> Result<InputMode, QRError> {
         let content = self.content.as_str();
 
         if content.chars().all(|c| c.is_ascii_digit()) {
+            self.mode = InputMode::Numeric;
             return Ok(InputMode::Numeric);
         }
 
@@ -60,17 +69,29 @@ impl QRInput {
             .chars()
             .all(|c| self.alphanumeric_chars.contains_key(&c))
         {
+            self.mode = InputMode::Alphanumeric;
             return Ok(InputMode::Alphanumeric);
         }
 
         if content.chars().all(|c| c as u32 <= 255) {
+            self.mode = InputMode::Byte;
             return Ok(InputMode::Byte);
         }
 
+        self.mode = InputMode::Byte;
         Ok(InputMode::Byte)
     }
 
-    pub fn validate_length(&self) -> Result<(), QRError> {
+    pub fn get_mode_indicator(&self) -> Result<u8, QRError> {
+        match self.mode {
+            InputMode::Numeric => Ok(0b0001),
+            InputMode::Alphanumeric => Ok(0b0010),
+            InputMode::Byte => Ok(0b0100),
+            InputMode::Kanji => Ok(0b1000),
+        }
+    }
+
+    pub fn validate_length(&mut self) -> Result<(), QRError> {
         let len = self.content.len();
         let max_length = match self.determine_mode()? {
             InputMode::Numeric => 7089,
@@ -89,13 +110,5 @@ impl QRInput {
         }
 
         Ok(())
-    }
-
-    pub fn get_content(&self) -> &str {
-        &self.content
-    }
-
-    pub fn get_mode(&self) -> Result<InputMode, QRError> {
-        self.determine_mode()
     }
 }

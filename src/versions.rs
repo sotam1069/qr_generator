@@ -1,10 +1,19 @@
-use crate::{encoder::CapacityInfo, encoder::ErrorCorrectionLevel};
+use crate::{encoder::ErrorCorrectionLevel};
 
 #[derive(Debug)]
 pub struct VersionInfo {
     pub size: u32,
     pub capacity_by_ec: [CapacityInfo; 4],
 }
+
+#[derive(Debug)]
+pub struct CapacityInfo {
+    pub numeric: usize,
+    pub alphanumeric: usize,
+    pub byte: usize,
+    pub kanji: usize,
+}
+
 
 pub const VERSION_CAPACITIES: &[VersionInfo] = &[
     // Version 1
