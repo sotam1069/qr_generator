@@ -72,10 +72,27 @@ impl QRData {
     }
 
     pub fn determine_version(&self) -> Result<Option<u8>, QRError> {
-        Ok(self.version)
+
+        let mode = self.content.get_mode()?;
+        let length = self.content.get_content().len();
+
+        for(version_index, version_info) in VERSION_CAPACITIES.iter().enumerate() {
+            let capacity = &version_info.capacity_by_ec[self.ec_level as usize];
+
+            let fits = match mode {
+                InputMode::Numeric => length <= capacity.numeric,
+                InputMode::Alphanumeric => length <= capacity.alphanumeric,
+                InputMode::Byte => length <= capacity.byte,
+                InputMode::Kanji => length <= capacity.kanji,
+            };
+
+            if fits {
+                return Ok(Some((version_index + 1) as u8));
+            }
+        }
+
+        Ok(None)
     }
 
-    fn can_fit_in_version(version: Option<u8>, mode: InputMode, length: usize) -> bool {
-        false
-    }
+
 }
