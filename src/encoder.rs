@@ -1,9 +1,37 @@
-pub struct QREncoder {
-    // Add fields as needed
+use std::fmt::Error;
+use crate::{error::QRError, QRInput};
+
+#[derive(Debug)]
+pub enum ErrorCorrectionLevel {
+    L,
+    M,
+    Q,
+    H,
 }
 
-impl QREncoder {
+#[derive(Debug)]
+pub struct CapacityInfo {
+    pub numeric: usize,
+    pub alphanumeric: usize,
+    pub byte: usize,
+    pub kanji: usize,
+}
+
+pub struct QRData {
+    content: QRInput,
+    ec_level: ErrorCorrectionLevel,
+    version: Option<u8>,
+}
+
+impl QRData {
+
     pub fn new() -> Self {
-        QREncoder {}
+
+        QRData {
+            content: QRInput::new(),
+            ec_level: ErrorCorrectionLevel::M,
+            version: None
+        }
     }
 }
+
