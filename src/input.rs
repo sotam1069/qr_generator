@@ -1,5 +1,5 @@
 use crate::error::QRError;
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 #[derive(Debug, Clone, Copy)]
 pub enum InputMode {
@@ -90,6 +90,45 @@ impl QRInput {
 
     pub fn get_mode_indicator(&self) -> u8 {
         self.mode.get_indicator()
+    }
+
+    pub fn calculate_character_count_indicator(&self, version: Option<u8>) -> u16 {
+        let version = version.unwrap();
+        let bit_length = match version {
+            1..=9 => match self.mode {
+                InputMode::Numeric => 10,
+                InputMode::Alphanumeric => 9,
+                InputMode::Byte => 8,
+                InputMode::Kanji => 8,
+            },
+            10..=26 => match self.mode {
+                InputMode::Numeric => 12,
+                InputMode::Alphanumeric => 11,
+                InputMode::Byte => 16,
+                InputMode::Kanji => 10,
+            },
+            27..=40 => match self.mode {
+                InputMode::Numeric => 14,
+                InputMode::Alphanumeric => 13,
+                InputMode::Byte => 16,
+                InputMode::Kanji => 12,
+            },
+            0 | 41..=u8::MAX => {
+                0
+            },
+        };
+
+        let count = self.content.chars().count();
+        let binary_padded =  format!("{:0width$b}", count, width=bit_length);
+        
+        return u16::from_str_radix(&binary_padded, 2).unwrap()
+    }
+
+    pub fn get_indicator(&self, version: Option<u8>) -> (u8, u16) {
+        let mode_indicator = self.get_mode_indicator();
+        let char_count_indicator = self.calculate_character_count_indicator(version);
+
+        (mode_indicator, char_count_indicator)
     }
 
     pub fn validate_length(&self) -> Result<(), QRError> {

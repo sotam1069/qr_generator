@@ -94,4 +94,13 @@ impl QRData {
         self.version = None;
         Ok(None)
     }
+
+    pub fn get_character_count_indicator(&mut self) -> u16 {
+
+        let version = self.get_version();
+
+        return self.input.calculate_character_count_indicator(version)
+    }
+
+
 }

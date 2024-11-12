@@ -14,6 +14,7 @@ fn main() {
         "9999999999999999999",     // Long numeric
         
         // Alphanumeric cases
+        "HELLO WORLD",
         "ABC123",                  // Short alphanumeric
         "HELLO WORLD:123",         // With allowed special chars
         "TEST-TEST/123:ABC",       // Mix of allowed chars
@@ -43,19 +44,48 @@ fn main() {
         
         match qr_data.set_content(test) {
             Ok(mode) => {
+
+                let mode_indicator = qr_data.get_input().get_mode_indicator();
+                let char_count = qr_data.get_input().calculate_character_count_indicator(qr_data.get_version());
+
                 println!("Mode: {:?}", qr_data.get_input().get_mode());
                 println!("Mode Indicator: {:04b}", qr_data.get_input().get_mode_indicator());
                 println!("EC Level: {:?}", qr_data.get_ec_level());
-                
-                match qr_data.get_version() {
-                    Some(version) => println!("Version: {}", version),
-                    None => println!("Content too large for any version"),
-                }
+                println!("Version: {:?}", qr_data.get_version().unwrap());
+
 
                 match qr_data.validate_length() {
                     Ok(_) => println!("Length validated"),
                     Err(e) => println!("Length validation failed: ({})", e),
                 }
+                
+                match qr_data.get_input().get_mode() {
+                    InputMode::Numeric => match qr_data.get_version() {
+                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:010b}", mode_indicator, char_count),
+                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:012b}", mode_indicator, char_count),
+                        Some(_) => println!("Indicators: {:04b} {:014b}", mode_indicator, char_count),
+                        None => println!("Version not determined"),
+                    },
+                    InputMode::Alphanumeric => match qr_data.get_version() {
+                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:09b}", mode_indicator, char_count),
+                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:011b}", mode_indicator, char_count),
+                        Some(_) => println!("Indicators: {:04b} {:013b}", mode_indicator, char_count),
+                        None => println!("Version not determined"),
+                    },
+                    InputMode::Byte => match qr_data.get_version() {
+                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:08b}", mode_indicator, char_count),
+                        Some(_) => println!("Indicators: {:04b} {:016b}", mode_indicator, char_count),
+                        None => println!("Version not determined"),
+                    },
+                    InputMode::Kanji => match qr_data.get_version() {
+                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:08b}", mode_indicator, char_count),
+                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:010b}", mode_indicator, char_count),
+                        Some(_) => println!("Indicators: {:04b} {:012b}", mode_indicator, char_count),
+                        None => println!("Version not determined"),
+                    },
+                }
+                
+
             }
             Err(e) => println!("Error: {}", e),
         }
