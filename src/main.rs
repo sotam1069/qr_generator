@@ -84,7 +84,9 @@ fn main() {
                         None => println!("Version not determined"),
                     },
                 }
-                
+                if qr_data.get_input().get_mode() == InputMode::Numeric {
+                    println!("Encoding data: {:?}", qr_data.encode()) 
+                }
 
             }
             Err(e) => println!("Error: {}", e),

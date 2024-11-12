@@ -102,5 +102,34 @@ impl QRData {
         return self.input.calculate_character_count_indicator(version)
     }
 
+    fn numeric_encoding(&self) -> Vec<Vec<char>> {
+
+        let input = self.input.get_content();
+        let chars: Vec<char> = input.chars().collect();
+        
+        chars.chunks(3)
+        .map(|chunk| chunk.to_vec())
+        .collect()
+
+    } 
+
+    pub fn encode(&self) -> Vec<Vec<char>> {
+
+        match self.input.get_mode() {
+            InputMode::Numeric => {
+                self.numeric_encoding()
+            },
+            InputMode::Alphanumeric => {
+                self.numeric_encoding()
+            },
+            InputMode::Byte => {
+                self.numeric_encoding()
+            },
+            InputMode::Kanji => {
+                self.numeric_encoding()
+            },
+        }
+    }
+
 
 }

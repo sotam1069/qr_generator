@@ -1,7 +1,7 @@
 use crate::error::QRError;
 use std::{collections::HashMap, fmt::format};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputMode {
     Numeric,
     Alphanumeric,
