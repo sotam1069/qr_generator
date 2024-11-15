@@ -1,6 +1,6 @@
-use crate::versions::{VersionInfo, VERSION_CAPACITIES};
+use std::ptr::addr_eq;
+use crate::versions::{VERSION_CAPACITIES};
 use crate::{error::QRError, InputMode, QRInput};
-use std::fmt::Error;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ErrorCorrectionLevel {
@@ -99,21 +99,47 @@ impl QRData {
 
         let version = self.get_version();
 
-        return self.input.calculate_character_count_indicator(version)
+        self.input.calculate_character_count_indicator(version)
     }
 
-    fn numeric_encoding(&self) -> Vec<Vec<char>> {
+    fn numeric_encoding(&self) -> Vec<String> {
 
         let input = self.input.get_content();
         let chars: Vec<char> = input.chars().collect();
         
-        chars.chunks(3)
+        let chunks: Vec<Vec<char>> = chars.chunks(3)
         .map(|chunk| chunk.to_vec())
-        .collect()
+        .collect();
+        let mut converted_chunks: Vec<String> = vec![];
+
+        for (index, chunk) in chunks.iter().enumerate() {
+
+            match chunk.len() {
+                3 => {
+                    let number = chunk.iter().collect::<String>().parse::<u16>().unwrap();
+                    let binary = format!("{:010b}", number);
+                    converted_chunks.push(binary);
+
+                },
+                2 => {
+                    let number = chunk.iter().collect::<String>().parse::<u16>().unwrap();
+                    let binary = format!("{:07b}", number);
+                    converted_chunks.push(binary);
+                },
+                1 => {
+                    let number = chunk.iter().collect::<String>().parse::<u16>().unwrap();
+                    let binary = format!("{:04b}", number);
+                    converted_chunks.push(binary);
+                },
+                _ => {}
+            }
+        }
+
+        converted_chunks
 
     } 
 
-    pub fn encode(&self) -> Vec<Vec<char>> {
+    pub fn encode(&self) -> Vec<String> {
 
         match self.input.get_mode() {
             InputMode::Numeric => {
