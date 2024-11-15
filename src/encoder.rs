@@ -1,4 +1,3 @@
-use std::ptr::addr_eq;
 use crate::versions::{VERSION_CAPACITIES};
 use crate::{error::QRError, InputMode, QRInput};
 
@@ -112,7 +111,7 @@ impl QRData {
         .collect();
         let mut converted_chunks: Vec<String> = vec![];
 
-        for (index, chunk) in chunks.iter().enumerate() {
+        for chunk in chunks {
 
             match chunk.len() {
                 3 => {
