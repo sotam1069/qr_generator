@@ -47,10 +47,6 @@ fn main() {
         
         match qr_data.set_content(test) {
             Ok(mode) => {
-
-                let mode_indicator = qr_data.get_input().get_mode_indicator();
-                let char_count = qr_data.get_input().calculate_character_count_indicator(qr_data.get_version());
-
                 println!("Mode: {:?}", qr_data.get_input().get_mode());
                 println!("Mode Indicator: {:04b}", qr_data.get_input().get_mode_indicator());
                 println!("EC Level: {:?}", qr_data.get_ec_level());
