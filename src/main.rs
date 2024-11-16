@@ -61,27 +61,32 @@ fn main() {
                     Ok(_) => println!("Length validated"),
                     Err(e) => println!("Length validation failed: ({})", e),
                 }
-                
-                match qr_data.get_input().get_mode() {
-                    InputMode::Numeric => match qr_data.get_version() {
-                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:010b}", mode_indicator, char_count),
-                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:012b}", mode_indicator, char_count),
-                        Some(_) => println!("Indicators: {:04b} {:014b}", mode_indicator, char_count),
-                        None => println!("Version not determined"),
-                    },
-                    InputMode::Alphanumeric => match qr_data.get_version() {
-                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:09b}", mode_indicator, char_count),
-                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:011b}", mode_indicator, char_count),
-                        Some(_) => println!("Indicators: {:04b} {:013b}", mode_indicator, char_count),
-                        None => println!("Version not determined"),
-                    },
-                    InputMode::Byte => match qr_data.get_version() {
-                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:08b}", mode_indicator, char_count),
-                        Some(_) => println!("Indicators: {:04b} {:016b}", mode_indicator, char_count),
-                        None => println!("Version not determined"),
-                    },
-                }
-                println!("Encoding data: {:?}", qr_data.encode());
+
+                let (mode_ind, char_count, encoded_data) = qr_data.get_data();
+
+                println!("Bit String: ({:04b}, {}, {:?})",
+                         mode_ind,
+                         match qr_data.get_input().get_mode() {
+                             InputMode::Numeric => match qr_data.get_version() {
+                                 Some(v) if v <= 9 => format!("{:010b}", char_count),
+                                 Some(v) if v <= 26 => format!("{:012b}", char_count),
+                                 Some(_) => format!("{:014b}", char_count),
+                                 None => format!("{:b}", char_count),
+                             },
+                             InputMode::Alphanumeric => match qr_data.get_version() {
+                                 Some(v) if v <= 9 => format!("{:09b}", char_count),
+                                 Some(v) if v <= 26 => format!("{:011b}", char_count),
+                                 Some(_) => format!("{:013b}", char_count),
+                                 None => format!("{:b}", char_count),
+                             },
+                             InputMode::Byte => match qr_data.get_version() {
+                                 Some(v) if v <= 9 => format!("{:08b}", char_count),
+                                 Some(_) => format!("{:016b}", char_count),
+                                 None => format!("{:b}", char_count),
+                             },
+                         },
+                         encoded_data
+                );
             }
             Err(e) => println!("Error: {}", e),
         }

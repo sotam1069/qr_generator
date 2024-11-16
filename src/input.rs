@@ -10,7 +10,7 @@ pub enum InputMode {
 
 impl InputMode {
 
-    pub fn get_indicator(self) -> u8 {
+    fn get_indicator(self) -> u8 {
          match self {
             InputMode::Numeric => 0b0001,
             InputMode::Alphanumeric => 0b0010,
