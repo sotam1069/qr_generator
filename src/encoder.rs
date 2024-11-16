@@ -185,10 +185,20 @@ impl QRData {
     fn byte_encoding(&self) -> Vec<String> {
 
         let input = self.input.get_content();
-        let chars: Vec<char> = input.chars().collect();
-        let converted_chunks: Vec<String> = vec![];
+        let mut converted_chunks: Vec<&u8> = vec![];
+        let mut result : Vec<String> = vec![];
 
-        converted_chunks
+        for byte in input.as_bytes() {
+
+            converted_chunks.push(byte);
+        }
+
+        for n in converted_chunks {
+            let binary = format!("{:08b}", n);
+            result.push(binary);
+        }
+
+        result
     }
 
 
