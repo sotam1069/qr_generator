@@ -1,12 +1,11 @@
 use crate::error::QRError;
-use std::{collections::HashMap, fmt::format};
+use std::{collections::HashMap};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputMode {
     Numeric,
     Alphanumeric,
     Byte,
-    Kanji,
 }
 
 impl InputMode {
@@ -16,7 +15,6 @@ impl InputMode {
             InputMode::Numeric => 0b0001,
             InputMode::Alphanumeric => 0b0010,
             InputMode::Byte => 0b0100,
-            InputMode::Kanji => 0b1000,
         }
     }
 }
@@ -99,19 +97,16 @@ impl QRInput {
                 InputMode::Numeric => 10,
                 InputMode::Alphanumeric => 9,
                 InputMode::Byte => 8,
-                InputMode::Kanji => 8,
             },
             10..=26 => match self.mode {
                 InputMode::Numeric => 12,
                 InputMode::Alphanumeric => 11,
                 InputMode::Byte => 16,
-                InputMode::Kanji => 10,
             },
             27..=40 => match self.mode {
                 InputMode::Numeric => 14,
                 InputMode::Alphanumeric => 13,
                 InputMode::Byte => 16,
-                InputMode::Kanji => 12,
             },
             0 | 41..=u8::MAX => {
                 0
@@ -137,7 +132,6 @@ impl QRInput {
             InputMode::Numeric => 7089,
             InputMode::Alphanumeric => 4296,
             InputMode::Byte => 2953,
-            InputMode::Kanji => 1817,
         };
 
         if len > max_length {

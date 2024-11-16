@@ -82,7 +82,6 @@ impl QRData {
                 InputMode::Numeric => length <= capacity.numeric,
                 InputMode::Alphanumeric => length <= capacity.alphanumeric,
                 InputMode::Byte => length <= capacity.byte,
-                InputMode::Kanji => length <= capacity.kanji,
             };
 
             if fits {
@@ -133,10 +132,65 @@ impl QRData {
                 _ => {}
             }
         }
+        converted_chunks
+    }
+
+    fn get_alphanumeric_value(c: char) -> u8 {
+        match c {
+            '0'..='9' => c as u8 - b'0',        // 0-9 map to 0-9
+            'A'..='Z' => (c as u8 - b'A') + 10,  // A=10, B=11, etc.
+            ' ' => 36,
+            '$' => 37,
+            '%' => 38,
+            '*' => 39,
+            '+' => 40,
+            '-' => 41,
+            '.' => 42,
+            '/' => 43,
+            ':' => 44,
+            _ => panic!("Invalid alphanumeric character")
+        }
+    }
+
+    fn alphanumeric_encoding(&self) -> Vec<String> {
+
+        let input = self.input.get_content();
+        let chars: Vec<char> = input.chars().collect();
+
+        let chunks: Vec<Vec<char>> = chars.chunks(2)
+            .map(|chunk| chunk.to_vec())
+            .collect();
+
+        let mut converted_chunks: Vec<String> = vec![];
+        for chunk in chunks {
+            match chunk.len() {
+                2 => {
+                    let first = Self::get_alphanumeric_value(chunk[0]) as u16;
+                    let second = Self::get_alphanumeric_value(chunk[1]) as u16;
+                    let number = (first * 45) + second;
+                    let binary = format!("{:011b}", number);
+                    converted_chunks.push(binary);
+                },
+                1 => {
+                    let value = Self::get_alphanumeric_value(chunk[0]) as u16;
+                    let binary = format!("{:06b}", value);
+                    converted_chunks.push(binary);
+                },
+                _ => {}
+            }
+        }
+        converted_chunks
+    }
+
+    fn byte_encoding(&self) -> Vec<String> {
+
+        let input = self.input.get_content();
+        let chars: Vec<char> = input.chars().collect();
+        let converted_chunks: Vec<String> = vec![];
 
         converted_chunks
+    }
 
-    } 
 
     pub fn encode(&self) -> Vec<String> {
 
@@ -145,13 +199,10 @@ impl QRData {
                 self.numeric_encoding()
             },
             InputMode::Alphanumeric => {
-                self.numeric_encoding()
+                self.alphanumeric_encoding()
             },
             InputMode::Byte => {
-                self.numeric_encoding()
-            },
-            InputMode::Kanji => {
-                self.numeric_encoding()
+                self.byte_encoding()
             },
         }
     }

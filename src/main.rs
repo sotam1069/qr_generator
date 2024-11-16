@@ -36,6 +36,9 @@ fn main() {
         "A",                       // Single character
         " ",                       // Single space
         "12A",                     // Numeric + Alpha
+        "123456",                  // 10 bits all three groups
+        "1234567",                 // Single digit remainder
+
     ];
 
     for test in test_cases {
@@ -77,17 +80,8 @@ fn main() {
                         Some(_) => println!("Indicators: {:04b} {:016b}", mode_indicator, char_count),
                         None => println!("Version not determined"),
                     },
-                    InputMode::Kanji => match qr_data.get_version() {
-                        Some(v) if v <= 9 => println!("Indicators: {:04b} {:08b}", mode_indicator, char_count),
-                        Some(v) if v <= 26 => println!("Indicators: {:04b} {:010b}", mode_indicator, char_count),
-                        Some(_) => println!("Indicators: {:04b} {:012b}", mode_indicator, char_count),
-                        None => println!("Version not determined"),
-                    },
                 }
-                if qr_data.get_input().get_mode() == InputMode::Numeric {
-                    println!("Encoding data: {:?}", qr_data.encode()) 
-                }
-
+                println!("Encoding data: {:?}", qr_data.encode());
             }
             Err(e) => println!("Error: {}", e),
         }
