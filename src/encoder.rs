@@ -232,9 +232,9 @@ impl QRData {
         result
     }
 
-    pub fn get_data(&self) -> (u8, u16, Vec<String>) {
+    pub fn get_data(&self) -> (u8, u16, String) {
         let indicators = self.input.get_indicator(self.version);
-        let encoded_data = self.encode();
+        let encoded_data = self.encode().join("");
 
         (indicators.0, indicators.1, encoded_data)
     }
@@ -255,6 +255,15 @@ impl QRData {
             ErrorCorrectionLevel::Q => 2,
             ErrorCorrectionLevel::H => 3,
         };
-        DATA_CODEWORDS[version_index][ec_index] * 8
+        let required_bits = DATA_CODEWORDS[version_index][ec_index] * 8;
+
+        // if((self.get_data().2).len() < required_bits as usize) {
+        //
+        //     if((self.get_data().2).len() - required_bits as usize) > 4 {
+        //
+        //     }
+        // }
+
+        required_bits
     }
 }
