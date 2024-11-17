@@ -1,5 +1,5 @@
 use qrcodegenerator::encoder::ErrorCorrectionLevel;
-use qrcodegenerator::{InputMode, QRData, QRInput};
+use qrcodegenerator::{InputMode, QRData};
 
 fn main() {
     let mut qr_data = QRData::new();
