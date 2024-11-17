@@ -1,57 +1,71 @@
 use qrcodegenerator::{InputMode, QRData, QRInput};
+use qrcodegenerator::encoder::ErrorCorrectionLevel;
 
 fn main() {
     let mut qr_data = QRData::new();
 
     let test_cases = vec![
-        "12345",         // Numeric
-        "ABC123",        // Alphanumeric
-        "Hello, World!", // Byte (ASCII)
-        "Hello, 世界!",  // Byte (UTF-8)
-        // Numeric cases
-        "12345",                    // Short numeric
-        "123456789012345",         // Medium numeric
-        "9999999999999999999",     // Long numeric
-        
-        // Alphanumeric cases
-        "HELLO WORLD",
-        "ABC123",                  // Short alphanumeric
-        "HELLO WORLD:123",         // With allowed special chars
-        "TEST-TEST/123:ABC",       // Mix of allowed chars
-        
-        // Byte cases (ASCII)
-        "Hello, World!",           // Simple ASCII
-        "Hello... World!!!",       // With punctuation
-        "Test@email.com",          // Email format
-        "https://test.com",        // URL format
-        
-        // Byte cases (UTF-8)
-        "Hello, 世界!",            // Mixed ASCII and Unicode
-        "こんにちは",              // Pure Japanese
-        "Café München",            // European chars
-        "Hello 👋 World",          // With emoji
-        
-        // Edge cases
-        "",                        // Empty string (should error)
-        "A",                       // Single character
-        " ",                       // Single space
-        "12A",                     // Numeric + Alpha
-        "123456",                  // 10 bits all three groups
-        "1234567",                 // Single digit remainder
 
+        "12345",
+        "ABC123",
+        "Hello, World!",
+        "Hello, 世界!",
+        "12345",
+        "123456789012345",
+        "9999999999999999999",
+        "HELLO WORLD",
+        "ABC123",
+        "HELLO WORLD:123",
+        "TEST-TEST/123:ABC",
+        "Hello, World!",
+        "Hello... World!!!",
+        "Test@email.com",
+        "https://test.com",
+        "Hello, 世界!",
+        "こんにちは",
+        "Café München",
+        "Hello 👋 World",
+        "",
+        "A",
+        " ",
+        "12A",
+        "123456",
+        "1234567",
+
+        "HELLO WORLD|L",
+        "HELLO WORLD|Q",
+        "HELLO WORLD|H",
+        "ABC123|Q",
+        "TEST DATA|L",
+        "SECURE DATA|H",
+        "99999|Q",
     ];
 
     for test in test_cases {
-        println!("\nTesting: {}", test);
+
+        let (content, ec_level) = if test.contains('|') {
+            let parts: Vec<&str> = test.split('|').collect();
+            (parts[0], match parts[1] {
+                "L" => ErrorCorrectionLevel::L,
+                "Q" => ErrorCorrectionLevel::Q,
+                "H" => ErrorCorrectionLevel::H,
+                _ => ErrorCorrectionLevel::M,
+            })
+        } else {
+            (test, ErrorCorrectionLevel::M)
+        };
+
+        println!("\nTesting: {}", content);
         println!("{}","-".repeat(40));
-        
-        match qr_data.set_content(test) {
+
+        match qr_data.set_content(content) {
             Ok(mode) => {
+                qr_data.set_ec_level(ec_level).unwrap();
                 println!("Mode: {:?}", qr_data.get_input().get_mode());
                 println!("Mode Indicator: {:04b}", qr_data.get_input().get_mode_indicator());
                 println!("EC Level: {:?}", qr_data.get_ec_level());
                 println!("Version: {:?}", qr_data.get_version().unwrap());
-
+                println!("Required Bits: {}", qr_data.get_required_bits());
 
                 match qr_data.validate_length() {
                     Ok(_) => println!("Length validated"),

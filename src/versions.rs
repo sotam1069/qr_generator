@@ -1,4 +1,4 @@
-use crate::{encoder::ErrorCorrectionLevel};
+use crate::encoder::ErrorCorrectionLevel;
 
 #[derive(Debug)]
 pub struct VersionInfo {
@@ -13,7 +13,6 @@ pub struct CapacityInfo {
     pub byte: usize,
     pub kanji: usize,
 }
-
 
 pub const VERSION_CAPACITIES: &[VersionInfo] = &[
     // Version 1
