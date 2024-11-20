@@ -1,5 +1,7 @@
 use crate::versions::VERSION_CAPACITIES;
 use crate::{error::QRError, InputMode, QRInput};
+use std::fmt::format;
+use std::thread::current;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ErrorCorrectionLevel {
@@ -175,7 +177,7 @@ impl QRData {
     fn get_alphanumeric_value(c: char) -> u8 {
         match c {
             '0'..='9' => c as u8 - b'0',        // 0-9 map to 0-9
-            'A'..='Z' => (c as u8 - b'A') + 10, // A=10, B=11, etc.
+            'A'..='Z' => (c as u8 - b'A') + 10, // A=10, B=11, etc...
             ' ' => 36,
             '$' => 37,
             '%' => 38,
@@ -232,7 +234,7 @@ impl QRData {
         result
     }
 
-    pub fn get_data(&self) -> (u8, u16, String) {
+    pub fn get_data(&mut self) -> (u8, u16, String) {
         let indicators = self.input.get_indicator(self.version);
         let encoded_data = self.encode().join("");
 
@@ -246,7 +248,29 @@ impl QRData {
             InputMode::Byte => self.byte_encoding(),
         }
     }
-    pub fn get_required_bits(&self) -> u16 {
+
+    pub fn add_terminator(&mut self) -> String {
+        let (mode_indicator, char_count_indicator, data_string) = self.get_data();
+        let required_bits = self.get_required_bits();
+
+        let mut final_bits = String::new();
+        final_bits.push_str(&format!("{:04b}", mode_indicator));
+        final_bits.push_str(&format!("{:b}", char_count_indicator));
+        final_bits.push_str(&data_string);
+
+        let curr_len = final_bits.len();
+        if curr_len >= required_bits as usize {
+            return final_bits;
+        }
+
+        let remaining_bits = required_bits as usize - curr_len;
+        let terminator_length = remaining_bits.min(4);
+
+        final_bits.push_str(&"0".repeat(terminator_length));
+
+        final_bits
+    }
+    pub fn get_required_bits(&mut self) -> u16 {
         let version_index = (self.version.unwrap() as usize) - 1;
 
         let ec_index = match self.ec_level {
@@ -257,13 +281,16 @@ impl QRData {
         };
         let required_bits = DATA_CODEWORDS[version_index][ec_index] * 8;
 
-        // if((self.get_data().2).len() < required_bits as usize) {
-        //
-        //     if((self.get_data().2).len() - required_bits as usize) > 4 {
-        //
-        //     }
-        // }
-
         required_bits
+    }
+
+    pub fn get_final_data(&mut self) -> Result<String, QRError> {
+        if self.version.is_none() {
+            return Err(QRError::InvalidVersion(
+                "Version not determined".to_string(),
+            ));
+        }
+
+        Ok(self.add_terminator())
     }
 }

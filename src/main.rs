@@ -1,5 +1,16 @@
+use std::fmt::format;
 use qrcodegenerator::encoder::ErrorCorrectionLevel;
 use qrcodegenerator::{InputMode, QRData};
+
+fn format_bit_string(bit_string: &str, chunk_size: usize) -> String {
+    bit_string
+        .chars()
+        .collect::<Vec<char>>()
+        .chunks(chunk_size)
+        .map(|c| c.iter().collect::<String>())
+        .collect::<Vec<String>>()
+        .join(" ")
+}
 
 fn main() {
     let mut qr_data = QRData::new();
@@ -62,13 +73,10 @@ fn main() {
             Ok(mode) => {
                 qr_data.set_ec_level(ec_level).unwrap();
                 println!("Mode: {:?}", qr_data.get_input().get_mode());
-                println!(
-                    "Mode Indicator: {:04b}",
-                    qr_data.get_input().get_mode_indicator()
-                );
                 println!("EC Level: {:?}", qr_data.get_ec_level());
                 println!("Version: {:?}", qr_data.get_version().unwrap());
-                println!("Required Bits: {}", qr_data.get_required_bits());
+                let required_bits = qr_data.get_required_bits();
+                println!("Required Bits: {}", required_bits);
 
                 match qr_data.validate_length() {
                     Ok(_) => println!("Length validated"),
@@ -77,7 +85,6 @@ fn main() {
 
                 let (mode_ind, char_count, encoded_data) = qr_data.get_data();
 
-                // Get the character count with proper padding based on mode/version
                 let count_str = match qr_data.get_input().get_mode() {
                     InputMode::Numeric => match qr_data.get_version() {
                         Some(v) if v <= 9 => format!("{:010b}", char_count),
@@ -98,12 +105,39 @@ fn main() {
                     },
                 };
 
+                let mode = format!("{:04b}", mode_ind);
+                let initial_data = format!("{}{}{}", mode, count_str, encoded_data);
+
+                let final_data = {
+                    let mut d = initial_data.clone();
+                    let remaining_bits = required_bits as usize - d.len();
+                    if remaining_bits > 0 {
+                        let terminator_length = remaining_bits.min(4);
+                        d.push_str(&"0".repeat(terminator_length));
+                    }
+                    d
+                };
+
+                println!("\nDetailed Bit String:");
+                println!("Mode Indicator: {} ({} bits)", format_bit_string(&mode, 4), mode.len());
+                println!("Character Count: {} ({} bits)", format_bit_string(&count_str, 4), count_str.len());
+
                 println!(
-                    "Bit String: {}{}{}",
-                    format!("{:04b}", mode_ind),
-                    count_str,
-                    encoded_data,
+                    "Encoded Data: {} ({} bits)",
+                    format_bit_string(&encoded_data, 4),
+                    encoded_data.len()
                 );
+                let terminator = final_data.get(initial_data.len()..).unwrap_or("");
+                println!(
+                    "Terminator: {} ({} bits)",
+                    format_bit_string(&terminator, 4),
+                    terminator.len()
+                );
+                println!(
+                    "\nFinal String ({} bits):",
+                    final_data.len()
+                );
+                println!("{}", format_bit_string(&final_data, 8));
             }
             Err(e) => println!("Error: {}", e),
         }
